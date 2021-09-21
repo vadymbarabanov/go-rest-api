@@ -1,4 +1,4 @@
-package store_test
+package teststore_test
 
 import (
 	"testing"
@@ -6,29 +6,24 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vadymbarabanov/go-rest-api/internal/app/model"
 	"github.com/vadymbarabanov/go-rest-api/internal/app/store"
+	"github.com/vadymbarabanov/go-rest-api/internal/app/store/teststore"
 )
 
 func TestUserRepository_Create(t *testing.T) {
-	s, teardown := store.TestStore(t, databaseURL)
-	defer teardown("users")
-
-	u, err := s.User().Create(model.TestUser(t))
-
-	assert.NoError(t, err)
-	assert.NotNil(t, u)
+	s := teststore.New()
+	u := model.TestUser(t)
+	assert.NoError(t, s.User().Create(u))
 }
 
 func TestUserRepository_FindByEmail(t *testing.T) {
-	s, teardown := store.TestStore(t, databaseURL)
-	defer teardown("users")
-
+	s := teststore.New()
 	email := "user@example.org"
 	_, err := s.User().FindByEmail(email)
-	assert.Error(t, err)
+	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
 	u := model.TestUser(t)
 	u.Email = email
-	if _, err := s.User().Create(u); err != nil {
+	if err := s.User().Create(u); err != nil {
 		t.Fatal(err)
 	}
 
