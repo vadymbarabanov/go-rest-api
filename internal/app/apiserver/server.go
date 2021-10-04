@@ -59,6 +59,7 @@ func (s *server) configureRouter() {
 	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
+	s.router.HandleFunc("/posts", s.handleCreatePost()).Methods("POST")
 
 	private := s.router.PathPrefix("/private").Subrouter()
 	private.Use(s.authenticateUser)
@@ -151,6 +152,22 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 		s.respond(w, r, http.StatusCreated, u)
 	}
 
+}
+
+func (s *server) handleCreatePost() http.HandlerFunc {
+	type request struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+	}
 }
 
 func (s *server) handleSessionsCreate() http.HandlerFunc {
